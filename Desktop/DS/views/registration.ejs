@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Rashtriya Raksha University</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- GSAP CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: white;
+            min-height: 80px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            height: 60px;
+            margin-right: 15px;
+        }
+
+        .university-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .university-name {
+            color: #2952a3;
+            font-size: clamp(18px, 5vw, 28px);
+            font-weight: bold;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .university-tagline {
+            color: #2952a3;
+            font-size: clamp(12px, 3vw, 16px);
+            line-height: 1.2;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            background-color: #1a3a6e;
+            padding: 0 15px;
+            color: white;
+            position: relative;
+        }
+
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .menu-toggle span {
+            display: block;
+            height: 3px;
+            width: 100%;
+            background-color: white;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links {
+            display: flex;
+            width: 100%;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 16px 20px;
+            display: inline-block;
+            transition: background-color 0.3s;
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .nav-links a:hover {
+            background-color: #2952a3;
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .header {
+                justify-content: center;
+                text-align: center;
+                padding: 10px;
+            }
+
+            .logo {
+                height: 50px;
+                margin-right: 10px;
+            }
+
+            .menu-toggle {
+                display: flex;
+                position: absolute;
+                right: 15px;
+                top: 15px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: #1a3a6e;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.5s ease;
+                z-index: 100;
+            }
+
+            .nav-links.active {
+                max-height: 300px;
+            }
+
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        /* Project Content Styles */
+        .project-content {
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+            min-height: calc(100vh - 180px); /* Account for header and navbar */
+        }
+
+        .project-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/rruimage.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            opacity: 0.9;
+            z-index: -1;
+        }
+
+        /* Add a subtle dark overlay to ensure text readability */
+        .project-content::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        .section-card {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+        }
+
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Form Styles */
+        form.registration-form {
+            max-width: 1000px;
+            margin: 20px auto;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        form.registration-form:hover {
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .form-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        input {
+            width: 90%;
+            padding: 18px 16px;
+            height: 48px;
+            border: 2px solid rgba(41, 82, 163, 0.7);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(41, 82, 163, 0.7), inset 0 2px 5px rgba(0, 0, 0, 0.1);
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: rgba(41, 82, 163, 1);
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 20px rgba(41, 82, 163, 0.8), inset 0 2px 5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .submit-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: auto;
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #2952a3, #1a3a6e);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            margin: 20px auto 0;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(41, 82, 163, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .submit-btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: all 0.6s ease;
+        }
+
+        .submit-btn:hover:before {
+            left: 100%;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #3a63b4, #2952a3);
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px rgba(41, 82, 163, 1);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(41, 82, 163, 0.8);
+        }
+
+        /* Responsive form styles */
+        @media (max-width: 768px) {
+            form.registration-form {
+                padding: 20px 15px;
+                margin: 15px auto;
+            }
+
+            form.registration-form:hover {
+                transform: none;
+            }
+
+            .form-title {
+                font-size: 1.3rem;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            input {
+                width: 100%;
+                padding: 14px 12px;
+                height: 45px;
+                font-size: 15px;
+            }
+
+            .submit-btn {
+                padding: 12px 25px;
+                font-size: 1rem;
+                width: 100%;
+            }
+
+            .grid-cols-2 {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        .table-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: white;
+            text-align: center;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .edit-btn, .delete-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            margin: 0 3px;
+        }
+
+        .edit-btn {
+            background: linear-gradient(135deg, #1976d2, #0d47a1);
+            box-shadow: 0 0 15px rgba(25, 118, 210, 0.8);
+        }
+
+        .edit-btn:hover {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            transform: translateY(-3px);
+            box-shadow: 0 0 25px rgba(25, 118, 210, 1);
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+            box-shadow: 0 0 15px rgba(211, 47, 47, 0.8);
+        }
+
+        .delete-btn:hover {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            transform: translateY(-3px);
+            box-shadow: 0 0 25px rgba(211, 47, 47, 1);
+        }
+
+        .delete-form {
+            display: inline;
+            margin: 0;
+            padding: 0;
+            background: none;
+            border: none;
+        }
+
+        .home-btn {
+            background: linear-gradient(135deg, #2952a3, #1a3a6e);
+            box-shadow: 0 0 20px rgba(41, 82, 163, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 1.1rem;
+            padding: 14px 28px;
+        }
+
+        .home-btn:hover {
+            background: linear-gradient(135deg, #3a63b4, #2952a3);
+            box-shadow: 0 0 30px rgba(41, 82, 163, 1);
+        }
+
+        .attendance-btn {
+            background: linear-gradient(135deg, #00796b, #004d40);
+            box-shadow: 0 0 20px rgba(0, 121, 107, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 1.1rem;
+            padding: 14px 28px;
+        }
+
+        .attendance-btn:hover {
+            background: linear-gradient(135deg, #009688, #00796b);
+            box-shadow: 0 0 30px rgba(0, 121, 107, 1);
+        }
+
+        /* Pagination Styles */
+        .pagination-btn {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #2952a3, #1a3a6e);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(41, 82, 163, 0.8);
+            font-size: 1rem;
+        }
+
+        .pagination-btn:hover {
+            background: linear-gradient(135deg, #3a63b4, #2952a3);
+            transform: translateY(-3px);
+            box-shadow: 0 0 25px rgba(41, 82, 163, 1);
+        }
+
+        .pagination-info {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin: 0 10px;
+            font-weight: bold;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            font-size: 1rem;
+        }
+
+        .arrow {
+            font-size: 1.3em;
+            margin: 0 6px;
+            font-weight: bold;
+        }
+
+        /* Search Form Styles */
+        .search-form {
+            margin: 0;
+            padding: 0;
+            background: none;
+            border: none;
+            box-shadow: none;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 30px;
+            padding: 5px;
+            border: 2px solid rgba(41, 82, 163, 0.5);
+            box-shadow: 0 0 15px rgba(41, 82, 163, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .search-container:hover, .search-container:focus-within {
+            border-color: rgba(41, 82, 163, 0.8);
+            box-shadow: 0 0 20px rgba(41, 82, 163, 0.8);
+        }
+
+        .search-input {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            font-size: 16px;
+            width: 300px;
+            outline: none;
+            box-shadow: none !important;
+            height: auto;
+            margin: 0;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #2952a3, #1a3a6e);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 5px;
+        }
+
+        .search-btn:hover {
+            background: linear-gradient(135deg, #3a63b4, #2952a3);
+            transform: scale(1.1);
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background-color: rgba(0, 0, 0, 0.4);
+            font-weight: bold;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Responsive table */
+        @media (max-width: 768px) {
+            .overflow-x-auto {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -15px;
+                padding: 0 15px;
+            }
+
+            table {
+                min-width: 650px; /* Ensure table is wide enough on mobile */
+            }
+
+            th, td {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .action-buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .edit-btn, .delete-btn {
+                padding: 8px 10px;
+                font-size: 0.8rem;
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* Button Styles */
+        .btn {
+            display: inline-block;
+            background: #2952a3;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #1a3a6e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Action buttons in table */
+        td .btn {
+            padding: 5px 10px;
+            font-size: 14px;
+            margin: 2px;
+        }
+
+        td form {
+            display: inline;
+            margin: 0;
+            padding: 0;
+            background: none;
+            border: none;
+        }
+
+        td form button {
+            background: #d32f2f;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        td form button:hover {
+            background: #b71c1c;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="/RRULogo.png" alt="Rashtriya Raksha University Logo" class="logo">
+        <div class="university-info">
+            <div class="university-name">Rashtriya Raksha University</div>
+            <div class="university-tagline">Pioneering National Security and Police University of India</div>
+        </div>
+    </div>
+
+    <div class="navbar">
+        <div class="menu-toggle" id="mobile-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="nav-links" id="nav-links">
+            <a href="/">Home</a>
+            <a href="/attendence">Attendance</a>
+            <a href="/registration">Register Student</a>
+        </div>
+    </div>
+
+    <div class="project-content">
+        <div class="container mx-auto px-4 py-8">
+            <div class="section-card">
+                <h1 class="text-3xl font-bold mb-6 text-center">User Management</h1>
+
+                <form action="<%= editUser ? '/users/edit/' + editUser._id : '/users/add' %>" method="POST" class="registration-form">
+                    <h3 class="form-title"><%= editUser ? 'Edit User' : 'Add New User' %></h3>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" name="name" placeholder="Enter full name" value="<%= editUser ? editUser.name : '' %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" placeholder="Enter email address" value="<%= editUser ? editUser.email : '' %>" required>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label for="tagID">RFID Tag UID</label>
+                            <input type="text" id="tagID" name="tagID" placeholder="Enter RFID tag UID" value="<%= editUser ? editUser.tagID : '' %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="text" id="password" name="password" placeholder="Enter password" value="<%= editUser ? editUser.password : '' %>" required>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="form-group">
+                            <label for="enrollmentNumber">Enrollment Number</label>
+                            <input type="text" id="enrollmentNumber" name="enrollmentNumber" placeholder="Enter enrollment number" value="<%= editUser ? editUser.enrollmentNumber : '' %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="batch">Batch</label>
+                            <input type="text" id="batch" name="batch" placeholder="Enter batch" value="<%= editUser ? editUser.batch : '' %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="semester">Semester</label>
+                            <input type="text" id="semester" name="semester" placeholder="Enter semester" value="<%= editUser ? editUser.semester : '' %>" required>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="submit-btn">
+                            <span class="btn-icon"><%= editUser ? '✏️' : '➕' %></span>
+                            <%= editUser ? 'Update User' : 'Add User' %>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="overflow-x-auto mt-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="table-title">Registered Users</h3>
+                        <form action="/registration" method="GET" class="search-form">
+                            <div class="search-container">
+                                <input type="text" name="search" placeholder="Search by name, email, enrollment no, RFID..."
+                                    value="<%= typeof search !== 'undefined' ? search : '' %>" class="search-input">
+                                <button type="submit" class="search-btn">
+                                    <span class="btn-icon">🔍</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <table>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>RFID Tag UID</th>
+                            <th>Password</th>
+                            <th>Enrollment Number</th>
+                            <th>Batch</th>
+                            <th>Semester</th>
+                            <th>Actions</th>
+                        </tr>
+                        <% users.forEach(user => { %>
+                            <tr class="user-row">
+                                <td><%= user.name %></td>
+                                <td><%= user.email %></td>
+                                <td><%= user.tagID %></td>
+                                <td><%= user.password %></td>
+                                <td><%= user.enrollmentNumber %></td>
+                                <td><%= user.batch %></td>
+                                <td><%= user.semester %></td>
+                                <td class="action-buttons">
+                                    <a href="/users/edit/<%= user._id %>" class="edit-btn">
+                                        <span class="btn-icon">✏️</span> Edit
+                                    </a>
+                                    <form action="/users/delete/<%= user._id %>" method="POST" class="delete-form">
+                                        <button type="submit" class="delete-btn">
+                                            <span class="btn-icon">🗑️</span> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </table>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="flex justify-center mt-6 mb-4">
+                    <% if (hasPrevPage) { %>
+                        <a href="/registration?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %>" class="pagination-btn">
+                            <span class="arrow">←</span> Previous
+                        </a>
+                    <% } %>
+
+                    <div class="pagination-info">
+                        Page <%= currentPage %> of <%= totalPages %>
+                    </div>
+
+                    <% if (hasNextPage) { %>
+                        <a href="/registration?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>" class="pagination-btn">
+                            Next <span class="arrow">→</span>
+                        </a>
+                    <% } %>
+                </div>
+
+                <div class="flex justify-center mt-6">
+                    <a href="/" class="btn home-btn">
+                        <span class="btn-icon">🏠</span> Back to Dashboard
+                    </a>
+                    <a href="/attendence" class="btn attendance-btn ml-4">
+                        <span class="btn-icon">📊</span> View Attendance
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="py-10 mt-10 border-t border-white/20">
+            <div class="container mx-auto px-4">
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold mb-6">Designed and Developed By</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                        <div class="p-4 bg-black/30 rounded-lg backdrop-blur-sm">
+                            <p class="font-semibold">Anish Kumar</p>
+                            <p class="text-white/70">240031101631006</p>
+                        </div>
+                        <div class="p-4 bg-black/30 rounded-lg backdrop-blur-sm">
+                            <p class="font-semibold">Anoop Singh</p>
+                            <p class="text-white/70">240031101631008</p>
+                        </div>
+                        <div class="p-4 bg-black/30 rounded-lg backdrop-blur-sm">
+                            <p class="font-semibold">Jai Sharma</p>
+                            <p class="text-white/70">240031101631020</p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-bold mb-6">Guided By</h3>
+                    <div class="max-w-md mx-auto p-4 bg-black/30 rounded-lg backdrop-blur-sm">
+                        <p class="font-semibold">Dr. Keyurkumar Patel</p>
+                        <p class="text-white/70">Director SASET & Assistant Professor(IT)</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Mobile Menu Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const navLinks = document.getElementById('nav-links');
+
+            if (mobileMenu) {
+                mobileMenu.addEventListener('click', function() {
+                    navLinks.classList.toggle('active');
+
+                    // Animate hamburger to X
+                    const spans = mobileMenu.querySelectorAll('span');
+                    if (navLinks.classList.contains('active')) {
+                        spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+                        spans[1].style.opacity = '0';
+                        spans[2].style.transform = 'rotate(-45deg) translate(7px, -6px)';
+                    } else {
+                        spans[0].style.transform = 'none';
+                        spans[1].style.opacity = '1';
+                        spans[2].style.transform = 'none';
+                    }
+                });
+
+                // Close menu when clicking on a link
+                const links = navLinks.querySelectorAll('a');
+                links.forEach(link => {
+                    link.addEventListener('click', function() {
+                        navLinks.classList.remove('active');
+                        const spans = mobileMenu.querySelectorAll('span');
+                        spans[0].style.transform = 'none';
+                        spans[1].style.opacity = '1';
+                        spans[2].style.transform = 'none';
+                    });
+                });
+            }
+        });
+
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Add glowing borders to all input fields
+        document.querySelectorAll("input").forEach(input => {
+            gsap.to(input, {
+                boxShadow: "0 0 10px rgba(41, 82, 163, 0.7), inset 0 2px 5px rgba(0, 0, 0, 0.1)",
+                borderColor: "rgba(41, 82, 163, 0.7)",
+                repeat: -1,
+                yoyo: true,
+                duration: 2
+            });
+        });
+
+        // Add glow effect to all buttons
+        document.querySelectorAll(".btn, .pagination-btn, .edit-btn, .delete-btn").forEach(btn => {
+            gsap.to(btn, {
+                boxShadow: "0 0 15px rgba(41, 82, 163, 0.8)",
+                repeat: -1,
+                yoyo: true,
+                duration: 1.5
+            });
+        });
+
+        // Special glow for submit button
+        gsap.to(".submit-btn", {
+            boxShadow: "0 0 20px rgba(41, 82, 163, 0.8)",
+            repeat: -1,
+            yoyo: true,
+            duration: 1.5
+        });
+
+        // Special glow for home button
+        gsap.to(".home-btn", {
+            boxShadow: "0 0 20px rgba(41, 82, 163, 0.8)",
+            repeat: -1,
+            yoyo: true,
+            duration: 1.5
+        });
+
+        // Special glow for attendance button
+        gsap.to(".attendance-btn", {
+            boxShadow: "0 0 20px rgba(0, 121, 107, 0.8)",
+            repeat: -1,
+            yoyo: true,
+            duration: 1.5
+        });
+
+        // Special glow for edit buttons
+        document.querySelectorAll(".edit-btn").forEach(btn => {
+            gsap.to(btn, {
+                boxShadow: "0 0 15px rgba(25, 118, 210, 0.8)",
+                repeat: -1,
+                yoyo: true,
+                duration: 1.5
+            });
+        });
+
+        // Special glow for delete buttons
+        document.querySelectorAll(".delete-btn").forEach(btn => {
+            gsap.to(btn, {
+                boxShadow: "0 0 15px rgba(211, 47, 47, 0.8)",
+                repeat: -1,
+                yoyo: true,
+                duration: 1.5
+            });
+        });
+
+        // Form hover effect - simplified
+        const form = document.querySelector(".registration-form");
+        form.addEventListener("mouseenter", () => {
+            gsap.to(form, {
+                boxShadow: "0 20px 50px rgba(0, 0, 0, 0.4)",
+                y: -5,
+                duration: 0.3
+            });
+        });
+
+        form.addEventListener("mouseleave", () => {
+            gsap.to(form, {
+                boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
+                y: 0,
+                duration: 0.3
+            });
+        });
+
+        // Input field focus animations - simplified
+        document.querySelectorAll("input").forEach(input => {
+            input.addEventListener("focus", () => {
+                gsap.to(input, {
+                    boxShadow: "0 0 20px rgba(41, 82, 163, 0.8), inset 0 2px 5px rgba(0, 0, 0, 0.1)",
+                    borderColor: "rgba(41, 82, 163, 1)",
+                    y: -2,
+                    duration: 0.2
+                });
+
+                // Animate the label
+                const label = input.previousElementSibling;
+                if (label && label.tagName === "LABEL") {
+                    gsap.to(label, {
+                        color: "rgba(255, 255, 255, 1)",
+                        textShadow: "0 0 5px rgba(41, 82, 163, 0.5)",
+                        duration: 0.2
+                    });
+                }
+            });
+
+            input.addEventListener("blur", () => {
+                gsap.to(input, {
+                    y: 0,
+                    duration: 0.2
+                });
+
+                // Reset the label
+                const label = input.previousElementSibling;
+                if (label && label.tagName === "LABEL") {
+                    gsap.to(label, {
+                        color: "rgba(255, 255, 255, 0.9)",
+                        textShadow: "none",
+                        duration: 0.2
+                    });
+                }
+            });
+        });
+
+        // Button hover animations - simplified
+        document.querySelectorAll(".btn, .edit-btn, .delete-btn, .submit-btn, .pagination-btn").forEach(btn => {
+            btn.addEventListener("mouseenter", () => {
+                gsap.to(btn, {
+                    scale: 1.05,
+                    duration: 0.2
+                });
+            });
+
+            btn.addEventListener("mouseleave", () => {
+                gsap.to(btn, {
+                    scale: 1,
+                    duration: 0.2
+                });
+            });
+        });
+
+        // Table row hover effect - simplified
+        document.querySelectorAll(".user-row").forEach(row => {
+            row.addEventListener("mouseenter", () => {
+                gsap.to(row, {
+                    backgroundColor: "rgba(255, 255, 255, 0.15)",
+                    duration: 0.2
+                });
+            });
+
+            row.addEventListener("mouseleave", () => {
+                gsap.to(row, {
+                    backgroundColor: "rgba(0, 0, 0, 0)",
+                    duration: 0.2
+                });
+            });
+        });
+
+        // Parallax effect for background - disable on mobile for performance
+        window.addEventListener('scroll', () => {
+            // Skip parallax on mobile devices for better performance
+            if (window.innerWidth > 768) {
+                const scrollY = window.scrollY;
+                gsap.to('.project-content::before', {
+                    backgroundPosition: `center ${scrollY * 0.5}px`,
+                    ease: "none",
+                    duration: 0.1
+                });
+            }
+        });
+
+        // Reduce animations on mobile for better performance
+        function optimizeForMobile() {
+            if (window.innerWidth <= 768) {
+                // Disable some animations on mobile
+                gsap.globalTimeline.getChildren().forEach(tween => {
+                    // Keep essential animations but reduce others
+                    if (tween.vars && tween.vars.repeat === -1) {
+                        // Slow down infinite animations
+                        tween.timeScale(0.7);
+                    }
+                });
+
+                // Disable form hover animation on mobile
+                const form = document.querySelector(".registration-form");
+                if (form) {
+                    form.removeEventListener("mouseenter", null);
+                    form.removeEventListener("mouseleave", null);
+                    gsap.set(form, { clearProps: "all" });
+                }
+            }
+        }
+
+        // Run optimization on load and resize
+        window.addEventListener('load', optimizeForMobile);
+        window.addEventListener('resize', optimizeForMobile);
+    </script>
+</body>
+</html>

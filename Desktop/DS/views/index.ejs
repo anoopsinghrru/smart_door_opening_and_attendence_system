@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rashtriya Raksha University</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- GSAP CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: white;
+            min-height: 80px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            height: 60px;
+            margin-right: 15px;
+        }
+
+        .university-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .university-name {
+            color: #2952a3;
+            font-size: clamp(18px, 5vw, 28px);
+            font-weight: bold;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .university-tagline {
+            color: #2952a3;
+            font-size: clamp(12px, 3vw, 16px);
+            line-height: 1.2;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            background-color: #1a3a6e;
+            padding: 0 15px;
+            color: white;
+            position: relative;
+        }
+
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .menu-toggle span {
+            display: block;
+            height: 3px;
+            width: 100%;
+            background-color: white;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links {
+            display: flex;
+            width: 100%;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 16px 20px;
+            display: inline-block;
+            transition: background-color 0.3s;
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .header {
+                justify-content: center;
+                text-align: center;
+                padding: 10px;
+            }
+
+            .logo {
+                height: 50px;
+                margin-right: 10px;
+            }
+
+            .menu-toggle {
+                display: flex;
+                position: absolute;
+                right: 15px;
+                top: 15px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: #1a3a6e;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.5s ease;
+                z-index: 100;
+            }
+
+            .nav-links.active {
+                max-height: 300px;
+            }
+
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        .nav-links a:hover {
+            background-color: #2952a3;
+        }
+
+        /* Smart Door Opening System Styles */
+        .project-content {
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .project-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/rruimage.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            opacity: 0.9;
+            z-index: -1;
+        }
+
+        /* Add a subtle dark overlay to ensure text readability */
+        .project-content::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+        .section-card {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-header {
+            cursor: pointer;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            transform: none !important;
+            -webkit-transform: none !important;
+            -moz-transform: none !important;
+            -ms-transform: none !important;
+            transition: background-color 0.3s ease;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .section-header h2 {
+            transform: none !important;
+            -webkit-transform: none !important;
+            -moz-transform: none !important;
+            -ms-transform: none !important;
+            text-orientation: mixed;
+            writing-mode: horizontal-tb;
+            direction: ltr;
+            unicode-bidi: normal;
+            display: block;
+            font-size: clamp(18px, 5vw, 24px);
+            padding-right: 40px; /* Space for arrow */
+        }
+
+        /* Clickable header styling */
+        .section-header {
+            position: relative;
+        }
+
+        .section-header::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M7 10l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: transform 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+            }
+        }
+
+        .section-header:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: translateY(-2px) !important;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 0 1.8rem;
+        }
+
+        .section-content.open {
+            max-height: 2000px; /* Adjust based on content */
+            padding: 1.8rem;
+        }
+
+        .image-placeholder {
+            background: linear-gradient(135deg, #2952a3, #1a3a6e);
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px;
+            margin: 1.2rem 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .section-header {
+                padding: 1rem;
+            }
+
+            .section-header::after {
+                right: 10px;
+                width: 24px;
+                height: 24px;
+            }
+
+            .section-content.open {
+                padding: 1rem;
+            }
+
+            .image-placeholder {
+                height: 150px;
+            }
+        }
+
+        .objective, .feature {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        /* Fix for inverted text - but exclude buttons and animations */
+        h1, h2, h3, h4, h5, h6, p, span, div.section-header, div.section-header * {
+            text-orientation: mixed !important;
+            writing-mode: horizontal-tb !important;
+            transform: none !important;
+        }
+
+        /* Ensure the button can be transformed */
+        .glow-button {
+            transform: scale(1) !important;
+            transition: transform 0.3s ease !important;
+        }
+
+        .glow-button:hover {
+            transform: translateY(-5px) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="/RRULogo.png" alt="Rashtriya Raksha University Logo" class="logo">
+        <div class="university-info">
+            <div class="university-name">Rashtriya Raksha University</div>
+            <div class="university-tagline">Pioneering National Security and Police University of India</div>
+        </div>
+    </div>
+
+    <div class="navbar">
+        <div class="menu-toggle" id="mobile-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="nav-links" id="nav-links">
+            <a href="/">Home</a>
+            <a href="/attendence">Attendance</a>
+            <a href="/registration">Register Student</a>
+        </div>
+    </div>
+
+    <div class="project-content">
+        <!-- Hero Section -->
+        <section class="min-h-screen flex items-center justify-center text-center px-4 relative overflow-hidden">
+            <div class="absolute inset-0 z-0">
+                <!-- Removed gradient overlay to make background image more visible -->
+            </div>
+            <div class="relative z-10 max-w-4xl mx-auto">
+                <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 animate-hero text-white drop-shadow-lg">
+                    Smart Door Opening System
+                </h1>
+                <p class="text-lg sm:text-xl md:text-2xl mb-10 animate-hero-delay text-white/90 max-w-3xl mx-auto leading-relaxed">
+                    Secure Access. Automated Attendance. Real-Time Monitoring.
+                </p>
+                <div class="flex justify-center">
+                    <button id="explore-btn" class="glow-button bg-white text-blue-900 px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 rounded-full text-lg sm:text-xl font-bold hover:bg-blue-100 transition animate-hero-delay shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        Explore Project
+                    </button>
+                </div>
+            </div>
+
+            <style>
+                @keyframes glow {
+                    0% {
+                        box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.3);
+                    }
+                    50% {
+                        box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.6);
+                    }
+                    100% {
+                        box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.3);
+                    }
+                }
+
+                .glow-button {
+                    animation: glow 2s infinite;
+                }
+
+                @media (max-width: 640px) {
+                    .glow-button {
+                        animation: none; /* Disable glow on very small screens for performance */
+                    }
+                }
+            </style>
+
+            <!-- Animated particles -->
+            <div class="particles-container"></div>
+        </section>
+
+        <!-- Chapter Sections -->
+        <div id="chapters" class="container mx-auto px-4 py-16">
+            <!-- Chapter 1 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="text-2xl font-bold" style="transform: none !important; display: inline-block;">Chapter 1: Introduction to Project</h2>
+                </div>
+                <div class="section-content">
+                    <h3 class="text-xl font-semibold">1.1 Purpose</h3>
+                    <p>The Smart Door Opening System enhances security and automates attendance tracking in classrooms using a two-step authentication process (keypad password and RFID card) to control door access via a servo motor. It logs entry/exit times, sends email notifications, and provides a web-based dashboard for real-time monitoring and data export.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">1.2 Objectives</h3>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li class="objective">Develop a secure door access system using keypad and RFID authentication.</li>
+                        <li class="objective">Automate attendance tracking with entry and exit time logging.</li>
+                        <li class="objective">Send email notifications for entry and exit events using Nodemailer.</li>
+                        <li class="objective">Create a user-friendly dashboard to manage users and view attendance records.</li>
+                        <li class="objective">Enable data export in Excel format for attendance analysis.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold mt-4">1.3 Scope</h3>
+                    <p>The system focuses on classroom access control and attendance tracking with dual authentication, servo motor control, LCD feedback, Node.js backend with MongoDB, web interface, and email notifications. Limitations include single-door control and internet dependency.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">1.4 Technology and Literature Review</h3>
+                    <p>Technologies: Arduino Uno, RFID RC522, 4x4 Keypad, SG90 Servo, JHD162A LCD, Node.js, MongoDB, EJS. Literature shows single-factor systems are less secure; this project combines dual authentication and IoT for enhanced security and automation.</p>
+                    <div class="image-placeholder">System Overview Diagram</div>
+                </div>
+            </div>
+
+            <!-- Chapter 2 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="text-2xl font-bold" style="transform: none !important; display: inline-block;">Chapter 2: System Analysis</h2>
+                </div>
+                <div class="section-content">
+                    <h3 class="text-xl font-semibold">2.1 Study of Current System</h3>
+                    <p>Traditional systems use mechanical locks or single-factor authentication (e.g., keycards). Attendance is manual, error-prone, and time-consuming.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">2.2 Problems and Weaknesses</h3>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li class="feature">Lack of Security: Single-factor authentication is vulnerable.</li>
+                        <li class="feature">Manual Attendance: Time-consuming and error-prone.</li>
+                        <li class="feature">No Real-Time Monitoring: Limited visibility into events.</li>
+                        <li class="feature">No Notifications: Admins not informed of access events.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold mt-4">2.3 Requirements of New System</h3>
+                    <p>Dual authentication, automated attendance, real-time dashboard, email notifications, and data export.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">2.4 System Feasibility</h3>
+                    <p>Technical: Uses available components. Economic: Low-cost. Operational: User-friendly. Schedule: Completable in a semester.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">2.5 Activity/Process</h3>
+                    <p>Password entry, RFID scan, UID verification, door unlock, logging, email notification, and exit logging.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">2.6 Features</h3>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li class="feature">Dual authentication (password + RFID).</li>
+                        <li class="feature">Automated entry/exit logging.</li>
+                        <li class="feature">Real-time web dashboard.</li>
+                        <li class="feature">Email notifications.</li>
+                        <li class="feature">Excel export for attendance data.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold mt-4">2.7 Main Modules</h3>
+                    <p>Authentication, Door Control, Attendance, Notification, Web Interface.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">2.8 Hardware and Software</h3>
+                    <p>Hardware: Arduino Uno, RFID RC522, Keypad, SG90 Servo, LCD. Software: Arduino IDE, Node.js, MongoDB, EJS, Nodemailer.</p>
+                    <div class="image-placeholder">Circuit Diagram</div>
+                </div>
+            </div>
+
+            <!-- Chapter 3 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="text-2xl font-bold" style="transform: none !important; display: inline-block;">Chapter 3: System Design</h2>
+                </div>
+                <div class="section-content">
+                    <h3 class="text-xl font-semibold">3.1 System Design & Methodology</h3>
+                    <p>Integrates Arduino hardware with Node.js backend for authentication, door control, and data management.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">3.2 Circuit Design</h3>
+                    <p>LCD: VCC-5V, GND-GND, SDA-A4, SCL-A5. Servo: Signal-10, VCC-5V, GND-GND. Keypad: Rows 9–6, Columns 5–2. RFID: SPI pins.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">3.3 Database Design</h3>
+                    <p>MongoDB: Users (name, email, tagID, password, etc.), Attendances (user, entryTime, exitTime, stayTime).</p>
+
+                    <h3 class="text-xl font-semibold mt-4">3.4 Process Design</h3>
+                    <p>Initialize hardware, validate credentials, control servo, update LCD, log data, render dashboard.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">3.5 Input/Output and Interface</h3>
+                    <p>Input: Keypad, RFID, web forms. Output: LCD, servo, dashboard, emails. Interface: EJS dashboard.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">3.6 Access Control and Security</h3>
+                    <p>Password + RFID, MongoDB authentication, secure email setup.</p>
+                    <div class="image-placeholder">Dashboard Screenshot</div>
+                </div>
+            </div>
+
+            <!-- Chapter 4 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="text-2xl font-bold" style="transform: none !important; display: inline-block;">Chapter 4: Implementation</h2>
+                </div>
+                <div class="section-content">
+                    <h3 class="text-xl font-semibold">4.1 Implementation Platform</h3>
+                    <p>Hardware: Arduino, RFID, Keypad, Servo, LCD. Software: Arduino IDE, Node.js, MongoDB, EJS.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">4.2 Modules Specification</h3>
+                    <p>Authentication, Door Control (servo 135° open, 0° close), Attendance, Notification, Web Interface.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">4.3 Findings and Results</h3>
+                    <p>System authenticates users, controls door, logs attendance, sends notifications, and provides dashboard access.</p>
+                    <div class="image-placeholder">Hardware Setup</div>
+                </div>
+            </div>
+
+            <!-- Chapter 5 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="text-2xl font-bold" style="transform: none !important; display: inline-block;">Chapter 5: Testing</h2>
+                </div>
+                <div class="section-content">
+                    <h3 class="text-xl font-semibold">5.1 Testing Strategy</h3>
+                    <p>Unit, Integration, System, and User Acceptance Testing.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">5.2 Test Cases</h3>
+                    <p>Keypad, RFID, Servo, Backend, Web: All passed with expected behavior.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">5.3 Test Results</h3>
+                    <p>All components functioned correctly with minor adjustments for RFID and email.</p>
+                </div>
+            </div>
+
+            <!-- Chapter 6 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="text-2xl font-bold" style="transform: none !important; display: inline-block;">Chapter 6: Conclusion and Discussion</h2>
+                </div>
+                <div class="section-content">
+                    <h3 class="text-xl font-semibold">6.1 Overall Analysis</h3>
+                    <p>Technical: Reliable. Economic: Affordable. Operational: User-friendly.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">6.2 Problems Encountered</h3>
+                    <p>RFID sensitivity and serial delays resolved.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">6.3 Summary</h3>
+                    <p>Achieves secure access and automated attendance with a robust backend.</p>
+
+                    <h3 class="text-xl font-semibold mt-4">6.4 Limitations and Future Enhancements</h3>
+                    <p>Limitations: Single-door, internet dependency. Enhancements: Multi-door, offline mode, biometrics.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="py-10 mt-10 border-t border-white/20">
+            <div class="container mx-auto px-4">
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold mb-6">Designed and Developed By</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                        <div class="p-4 bg-black/30 rounded-lg backdrop-blur-sm">
+                            <p class="font-semibold">Anish Kumar</p>
+                            <p class="text-white/70">240031101631006</p>
+                        </div>
+                        <div class="p-4 bg-black/30 rounded-lg backdrop-blur-sm">
+                            <p class="font-semibold">Anoop Singh</p>
+                            <p class="text-white/70">240031101631008</p>
+                        </div>
+                        <div class="p-4 bg-black/30 rounded-lg backdrop-blur-sm">
+                            <p class="font-semibold">Jai Sharma</p>
+                            <p class="text-white/70">240031101631020</p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-bold mb-6">Guided By</h3>
+                    <div class="max-w-md mx-auto p-4 bg-black/30 rounded-lg backdrop-blur-sm">
+                        <p class="font-semibold">Dr. Keyurkumar Patel</p>
+                        <p class="text-white/70">Director SASET & Assistant Professor(IT)</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Mobile Menu Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const navLinks = document.getElementById('nav-links');
+
+            if (mobileMenu) {
+                mobileMenu.addEventListener('click', function() {
+                    navLinks.classList.toggle('active');
+
+                    // Animate hamburger to X
+                    const spans = mobileMenu.querySelectorAll('span');
+                    if (navLinks.classList.contains('active')) {
+                        spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+                        spans[1].style.opacity = '0';
+                        spans[2].style.transform = 'rotate(-45deg) translate(7px, -6px)';
+                    } else {
+                        spans[0].style.transform = 'none';
+                        spans[1].style.opacity = '1';
+                        spans[2].style.transform = 'none';
+                    }
+                });
+
+                // Close menu when clicking on a link
+                const links = navLinks.querySelectorAll('a');
+                links.forEach(link => {
+                    link.addEventListener('click', function() {
+                        navLinks.classList.remove('active');
+                        const spans = mobileMenu.querySelectorAll('span');
+                        spans[0].style.transform = 'none';
+                        spans[1].style.opacity = '1';
+                        spans[2].style.transform = 'none';
+                    });
+                });
+            }
+        });
+
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Create particles for hero section
+        function createParticles() {
+            const particlesContainer = document.querySelector('.particles-container');
+
+            // Reduce particle count on mobile for better performance
+            const isMobile = window.innerWidth < 768;
+            const particleCount = isMobile ? 20 : 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+
+                // Random styling
+                particle.style.position = 'absolute';
+                particle.style.width = `${Math.random() * 10 + 2}px`;
+                particle.style.height = particle.style.width;
+                particle.style.background = 'rgba(255, 255, 255, 0.5)';
+                particle.style.borderRadius = '50%';
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+
+                particlesContainer.appendChild(particle);
+
+                // Animate each particle - simpler animation on mobile
+                if (isMobile) {
+                    gsap.to(particle, {
+                        y: `${Math.random() * 100 - 50}`,
+                        x: `${Math.random() * 100 - 50}`,
+                        opacity: Math.random() * 0.3,
+                        duration: Math.random() * 8 + 5,
+                        repeat: -1,
+                        yoyo: true,
+                        ease: "sine.inOut"
+                    });
+                } else {
+                    gsap.to(particle, {
+                        y: `${Math.random() * 200 - 100}`,
+                        x: `${Math.random() * 200 - 100}`,
+                        opacity: Math.random() * 0.5,
+                        duration: Math.random() * 10 + 5,
+                        repeat: -1,
+                        yoyo: true,
+                        ease: "sine.inOut"
+                    });
+                }
+            }
+        }
+
+        createParticles();
+
+        // Hero Section Animations
+
+        gsap.from(".animate-hero", {
+            opacity: 0,
+            y: 50,
+            duration: 1.2,
+            ease: "power3.out"
+        });
+
+        gsap.from(".animate-hero-delay", {
+            opacity: 0,
+            y: 50,
+            duration: 1.2,
+            delay: 0.5,
+            ease: "power3.out",
+            stagger: 0.2
+        });
+
+        // Section Card Animations
+        gsap.utils.toArray(".section-card").forEach((card, index) => {
+            gsap.from(card, {
+                opacity: 0,
+                y: 100,
+                duration: 1,
+                delay: index * 0.1,
+                scrollTrigger: {
+                    trigger: card,
+                    start: "top 85%",
+                    toggleActions: "play none none none"
+                }
+            });
+        });
+
+        // Objective and Feature Animations
+        gsap.utils.toArray(".objective, .feature").forEach((item, index) => {
+            gsap.to(item, {
+                opacity: 1,
+                y: 0,
+                duration: 0.7,
+                delay: index * 0.15,
+                scrollTrigger: {
+                    trigger: item,
+                    start: "top 90%"
+                }
+            });
+        });
+
+        // Toggle Section Content on Click (for all devices)
+        document.querySelectorAll(".section-card").forEach(card => {
+            const header = card.querySelector(".section-header");
+            const content = card.querySelector(".section-content");
+
+            // Set initial state
+            gsap.set(content, { maxHeight: 0 });
+            let isOpen = false;
+
+            // Function to open content
+            const openContent = () => {
+                content.classList.add("open");
+
+                // Change header background
+                gsap.to(header, {
+                    backgroundColor: "rgba(0, 0, 0, 0.7)",
+                    duration: 0.3
+                });
+
+                // Rotate arrow icon
+                gsap.to(header.querySelector("::after") || header, {
+                    rotation: 180,
+                    duration: 0.3
+                });
+
+                // Enhanced visual feedback for clicked state
+                gsap.to(header, {
+                    boxShadow: "0 0 15px rgba(41, 82, 163, 0.5)",
+                    duration: 0.3
+                });
+
+                // Stop the pulsing animation on the arrow
+                const arrow = header.querySelector("::after") || header;
+                arrow.style.animation = "none";
+
+                // Open content
+                gsap.to(content, {
+                    maxHeight: content.scrollHeight,
+                    duration: 0.4,
+                    ease: "power2.out",
+                    onComplete: () => {
+                        // Animate content elements when opened
+                        gsap.from(content.querySelectorAll("h3, p, ul, .image-placeholder"), {
+                            opacity: 0,
+                            y: 10,
+                            duration: 0.3,
+                            stagger: 0.05
+                        });
+                    }
+                });
+            };
+
+            // Function to close content
+            const closeContent = () => {
+                content.classList.remove("open");
+
+                // Change header background back
+                gsap.to(header, {
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    duration: 0.3
+                });
+
+                // Rotate arrow icon back
+                gsap.to(header.querySelector("::after") || header, {
+                    rotation: 0,
+                    duration: 0.3
+                });
+
+                // Reset visual feedback
+                gsap.to(header, {
+                    boxShadow: "none",
+                    duration: 0.3
+                });
+
+                // Restore the pulsing animation on the arrow
+                const arrow = header.querySelector("::after") || header;
+                arrow.style.animation = "pulse 2s infinite";
+
+                // Close content
+                gsap.to(content, {
+                    maxHeight: 0,
+                    duration: 0.4,
+                    ease: "power2.in"
+                });
+            };
+
+            // Toggle on click for all devices
+            header.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Close all other open sections first
+                document.querySelectorAll(".section-card").forEach(otherCard => {
+                    if (otherCard !== card && otherCard.querySelector(".section-content").classList.contains("open")) {
+                        const otherHeader = otherCard.querySelector(".section-header");
+                        const otherContent = otherCard.querySelector(".section-content");
+
+                        // Close other content
+                        otherContent.classList.remove("open");
+                        gsap.to(otherHeader, {
+                            backgroundColor: "rgba(0, 0, 0, 0.5)",
+                            duration: 0.3
+                        });
+                        gsap.to(otherHeader.querySelector("::after") || otherHeader, {
+                            rotation: 0,
+                            duration: 0.3
+                        });
+                        gsap.to(otherContent, {
+                            maxHeight: 0,
+                            duration: 0.4,
+                            ease: "power2.in"
+                        });
+                    }
+                });
+
+                // Toggle current section
+                if (isOpen) {
+                    closeContent();
+                } else {
+                    openContent();
+                }
+                isOpen = !isOpen;
+            });
+
+            // Add visual cue for clickable headers
+            header.style.cursor = "pointer";
+
+            // Add a subtle hover effect to indicate clickability
+            header.addEventListener("mouseenter", () => {
+                if (!isOpen) {
+                    gsap.to(header, {
+                        backgroundColor: "rgba(0, 0, 0, 0.6)",
+                        duration: 0.2
+                    });
+                }
+            });
+
+            header.addEventListener("mouseleave", () => {
+                if (!isOpen) {
+                    gsap.to(header, {
+                        backgroundColor: "rgba(0, 0, 0, 0.5)",
+                        duration: 0.2
+                    });
+                }
+            });
+        });
+
+        // Image Placeholder Hover Effect
+        document.querySelectorAll(".image-placeholder").forEach(img => {
+            img.addEventListener("mouseenter", () => {
+                gsap.to(img, {
+                    scale: 1.05,
+                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.3)",
+                    duration: 0.4
+                });
+            });
+            img.addEventListener("mouseleave", () => {
+                gsap.to(img, {
+                    scale: 1,
+                    boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
+                    duration: 0.4
+                });
+            });
+        });
+
+        // Parallax effect for background - disable on mobile for performance
+        window.addEventListener('scroll', () => {
+            // Skip parallax on mobile devices for better performance
+            if (window.innerWidth > 768) {
+                const scrollY = window.scrollY;
+                gsap.to('.project-content::before', {
+                    backgroundPosition: `center ${scrollY * 0.5}px`,
+                    ease: "none",
+                    duration: 0.1
+                });
+            }
+        });
+
+        // Reduce animations on mobile for better performance
+        function optimizeForMobile() {
+            if (window.innerWidth <= 768) {
+                // Disable some animations on mobile
+                gsap.globalTimeline.getChildren().forEach(tween => {
+                    // Keep essential animations but reduce others
+                    if (tween.vars && tween.vars.repeat === -1) {
+                        // Slow down infinite animations
+                        tween.timeScale(0.7);
+                    }
+                });
+            }
+        }
+
+        // Run optimization on load and resize
+        window.addEventListener('load', optimizeForMobile);
+        window.addEventListener('resize', optimizeForMobile);
+
+        // Scroll to chapters when Explore Project button is clicked
+        document.getElementById('explore-btn').addEventListener('click', () => {
+            const chaptersSection = document.getElementById('chapters');
+
+            // Add a slight visual feedback on click
+            gsap.to('#explore-btn', {
+                scale: 0.95,
+                duration: 0.1,
+                yoyo: true,
+                repeat: 1,
+                overwrite: true,
+                clearProps: "transform"
+            });
+
+            // Scroll to chapters section with smooth animation
+            window.scrollTo({
+                top: chaptersSection.offsetTop - 50, // Offset by 50px to give some space
+                behavior: 'smooth'
+            });
+
+            // Highlight the first chapter card
+            gsap.to('.section-card:first-child', {
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                boxShadow: '0 15px 35px rgba(255, 255, 255, 0.2)',
+                duration: 0.5,
+                yoyo: true,
+                repeat: 1
+            });
+        });
+    </script>
+</body>
+</html>

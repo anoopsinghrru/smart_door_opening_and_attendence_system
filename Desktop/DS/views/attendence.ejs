@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Dashboard - Rashtriya Raksha University</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- GSAP CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- Socket.IO Client -->
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: white;
+            min-height: 80px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            height: 60px;
+            margin-right: 15px;
+        }
+
+        .university-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .university-name {
+            color: #2952a3;
+            font-size: clamp(18px, 5vw, 28px);
+            font-weight: bold;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .university-tagline {
+            color: #2952a3;
+            font-size: clamp(12px, 3vw, 16px);
+            line-height: 1.2;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            background-color: #1a3a6e;
+            padding: 0 15px;
+            color: white;
+            position: relative;
+        }
+
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .menu-toggle span {
+            display: block;
+            height: 3px;
+            width: 100%;
+            background-color: white;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links {
+            display: flex;
+            width: 100%;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 16px 20px;
+            display: inline-block;
+            transition: background-color 0.3s;
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .nav-links a:hover {
+            background-color: #2952a3;
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .header {
+                justify-content: center;
+                text-align: center;
+                padding: 10px;
+            }
+
+            .logo {
+                height: 50px;
+                margin-right: 10px;
+            }
+
+            .menu-toggle {
+                display: flex;
+                position: absolute;
+                right: 15px;
+                top: 15px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: #1a3a6e;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.5s ease;
+                z-index: 100;
+            }
+
+            .nav-links.active {
+                max-height: 300px;
+            }
+
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        /* Project Content Styles */
+        .project-content {
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+            min-height: calc(100vh - 180px); /* Account for header and navbar */
+        }
+
+        .project-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/rruimage.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            opacity: 0.9;
+            z-index: -1;
+        }
+
+        /* Add a subtle dark overlay to ensure text readability */
+        .project-content::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        .section-card {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+        }
+
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background-color: rgba(0, 0, 0, 0.4);
+            font-weight: bold;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Responsive table */
+        @media (max-width: 768px) {
+            .overflow-x-auto {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -15px;
+                padding: 0 15px;
+            }
+
+            table {
+                min-width: 650px; /* Ensure table is wide enough on mobile */
+            }
+
+            th, td {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+
+        /* Button Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2952a3, #1a3a6e);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            margin: 10px 5px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(41, 82, 163, 0.8);
+            letter-spacing: 0.5px;
+            font-size: 1.1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: all 0.6s ease;
+        }
+
+        .btn:hover:before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #3a63b4, #2952a3);
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px rgba(41, 82, 163, 1);
+        }
+
+        .btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(41, 82, 163, 0.8);
+        }
+
+        .btn-icon {
+            margin-right: 10px;
+            font-size: 1.3em;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+            box-shadow: 0 0 20px rgba(46, 125, 50, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .download-btn:hover {
+            background: linear-gradient(135deg, #388e3c, #2e7d32);
+            box-shadow: 0 0 30px rgba(46, 125, 50, 1);
+        }
+
+        .register-btn {
+            background: linear-gradient(135deg, #1976d2, #0d47a1);
+            box-shadow: 0 0 20px rgba(25, 118, 210, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .register-btn:hover {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            box-shadow: 0 0 30px rgba(25, 118, 210, 1);
+        }
+
+        /* Pagination Styles */
+        .pagination-btn {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #2952a3, #1a3a6e);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(41, 82, 163, 0.8);
+            font-size: 1rem;
+        }
+
+        .pagination-btn:hover {
+            background: linear-gradient(135deg, #3a63b4, #2952a3);
+            transform: translateY(-3px);
+            box-shadow: 0 0 25px rgba(41, 82, 163, 1);
+        }
+
+        .pagination-info {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin: 0 10px;
+            font-weight: bold;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            font-size: 1rem;
+        }
+
+        .arrow {
+            font-size: 1.3em;
+            margin: 0 6px;
+            font-weight: bold;
+        }
+
+        /* Search and Filter Form Styles */
+        .filter-form {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 30px;
+            padding: 5px;
+            border: 2px solid rgba(41, 82, 163, 0.5);
+            box-shadow: 0 0 15px rgba(41, 82, 163, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .search-container:hover, .search-container:focus-within {
+            border-color: rgba(41, 82, 163, 0.8);
+            box-shadow: 0 0 20px rgba(41, 82, 163, 0.8);
+        }
+
+        .search-input {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            font-size: 16px;
+            width: 100%;
+            outline: none;
+            box-shadow: none !important;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #2952a3, #1a3a6e);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 5px;
+        }
+
+        .search-btn:hover {
+            background: linear-gradient(135deg, #3a63b4, #2952a3);
+            transform: scale(1.1);
+        }
+
+        .date-container {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 30px;
+            padding: 5px 15px;
+            border: 2px solid rgba(41, 82, 163, 0.5);
+            box-shadow: 0 0 15px rgba(41, 82, 163, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .date-container:hover, .date-container:focus-within {
+            border-color: rgba(41, 82, 163, 0.8);
+            box-shadow: 0 0 20px rgba(41, 82, 163, 0.8);
+        }
+
+        .date-label {
+            color: white;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .date-input {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 10px 5px;
+            font-size: 16px;
+            width: 100%;
+            outline: none;
+            box-shadow: none !important;
+        }
+
+        .date-input::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        .filter-btn, .reset-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .filter-btn {
+            background: linear-gradient(135deg, #2952a3, #1a3a6e);
+            color: white;
+        }
+
+        .filter-btn:hover {
+            background: linear-gradient(135deg, #3a63b4, #2952a3);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #616161, #424242);
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background: linear-gradient(135deg, #757575, #616161);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+
+
+        /* Responsive form styles */
+        @media (max-width: 768px) {
+            .filter-form {
+                padding: 15px;
+            }
+
+            .grid {
+                display: grid;
+                grid-gap: 10px;
+            }
+
+            .md\:grid-cols-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .flex.justify-end {
+                justify-content: center;
+                margin-top: 15px;
+            }
+
+            .filter-btn, .reset-btn {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+
+            .date-container {
+                padding: 3px 10px;
+            }
+
+            .date-label {
+                font-size: 14px;
+            }
+
+            .date-input {
+                font-size: 14px;
+                padding: 8px 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="/RRULogo.png" alt="Rashtriya Raksha University Logo" class="logo">
+        <div class="university-info">
+            <div class="university-name">Rashtriya Raksha University</div>
+            <div class="university-tagline">Pioneering National Security and Police University of India</div>
+        </div>
+    </div>
+
+    <div class="navbar">
+        <div class="menu-toggle" id="mobile-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="nav-links" id="nav-links">
+            <a href="/">Home</a>
+            <a href="/attendence">Attendance</a>
+            <a href="/registration">Register Student</a>
+        </div>
+    </div>
+
+    <div class="project-content">
+        <div class="container mx-auto px-4 py-8">
+            <div class="section-card">
+                <h1 class="text-3xl font-bold mb-6 text-center">Attendance Dashboard</h1>
+
+                <!-- Search and Filter Form -->
+                <form action="/attendence" method="GET" class="filter-form mb-6">
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="search-container">
+                            <input type="text" name="search" placeholder="Search by name, enrollment no..."
+                                value="<%= typeof search !== 'undefined' ? search : '' %>" class="search-input">
+                            <button type="submit" class="search-btn">
+                                <span class="btn-icon">🔍</span>
+                            </button>
+                        </div>
+
+                        <div class="date-container">
+                            <label for="startDate" class="date-label">From:</label>
+                            <input type="date" id="startDate" name="startDate"
+                                value="<%= typeof startDate !== 'undefined' ? startDate : '' %>" class="date-input">
+                        </div>
+
+                        <div class="date-container">
+                            <label for="endDate" class="date-label">To:</label>
+                            <input type="date" id="endDate" name="endDate"
+                                value="<%= typeof endDate !== 'undefined' ? endDate : '' %>" class="date-input">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end mt-3">
+                        <button type="submit" class="filter-btn">
+                            <span class="btn-icon">🔎</span> Apply Filters
+                        </button>
+                        <a href="/attendence" class="reset-btn ml-3">
+                            <span class="btn-icon">↺</span> Reset
+                        </a>
+                    </div>
+                </form>
+
+                <div class="overflow-x-auto">
+                    <table>
+                        <tr>
+                            <th>User Name</th>
+                            <th>Enrollment Number</th>
+                            <th>Batch</th>
+                            <th>Semester</th>
+                            <th>Entry Time</th>
+                            <th>Exit Time</th>
+                            <th>Stay Time (min)</th>
+                        </tr>
+                        <% attendances.forEach(att => { %>
+                            <tr data-entry-time="<%= new Date(att.entryTime).getTime() %>">
+                                <td><%= att.user.name %></td>
+                                <td><%= att.user.enrollmentNumber %></td>
+                                <td><%= att.user.batch %></td>
+                                <td><%= att.user.semester %></td>
+                                <td><%= att.entryTime.toLocaleString() %></td>
+                                <td><%= att.exitTime ? att.exitTime.toLocaleString() : 'Still inside' %></td>
+                                <td><%= att.exitTime ? att.stayTime.toFixed(2) : 'N/A' %></td>
+                            </tr>
+                        <% }) %>
+                    </table>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="flex justify-center mt-6 mb-4">
+                    <% if (hasPrevPage) { %>
+                        <a href="/attendence?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %><%= startDate ? '&startDate=' + startDate : '' %><%= endDate ? '&endDate=' + endDate : '' %>" class="pagination-btn">
+                            <span class="arrow">←</span> Previous
+                        </a>
+                    <% } %>
+
+                    <div class="pagination-info">
+                        Page <%= currentPage %> of <%= totalPages %>
+                    </div>
+
+                    <% if (hasNextPage) { %>
+                        <a href="/attendence?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %><%= startDate ? '&startDate=' + startDate : '' %><%= endDate ? '&endDate=' + endDate : '' %>" class="pagination-btn">
+                            Next <span class="arrow">→</span>
+                        </a>
+                    <% } %>
+                </div>
+
+                <div class="flex justify-center mt-6">
+                    <a href="/download<%= search || startDate || endDate ? '?' : '' %><%= search ? 'search=' + search : '' %><%= search && (startDate || endDate) ? '&' : '' %><%= startDate ? 'startDate=' + startDate : '' %><%= startDate && endDate ? '&' : '' %><%= endDate ? 'endDate=' + endDate : '' %>" class="btn download-btn">
+                        <span class="btn-icon">📥</span> Download as Excel
+                    </a>
+                    <a href="/registration" class="btn register-btn ml-4">
+                        <span class="btn-icon">👤</span> Register/Edit Users
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="py-10 mt-10 border-t border-white/20">
+            <div class="container mx-auto px-4">
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold mb-6">Designed and Developed By</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                        <div class="p-4 bg-black/30 rounded-lg backdrop-blur-sm">
+                            <p class="font-semibold">Anish Kumar</p>
+                            <p class="text-white/70">240031101631006</p>
+                        </div>
+                        <div class="p-4 bg-black/30 rounded-lg backdrop-blur-sm">
+                            <p class="font-semibold">Anoop Singh</p>
+                            <p class="text-white/70">240031101631008</p>
+                        </div>
+                        <div class="p-4 bg-black/30 rounded-lg backdrop-blur-sm">
+                            <p class="font-semibold">Jai Sharma</p>
+                            <p class="text-white/70">240031101631020</p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-bold mb-6">Guided By</h3>
+                    <div class="max-w-md mx-auto p-4 bg-black/30 rounded-lg backdrop-blur-sm">
+                        <p class="font-semibold">Dr. Keyurkumar Patel</p>
+                        <p class="text-white/70">Director SASET & Assistant Professor(IT)</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Socket.IO Connection
+        const socket = io();
+
+        // Basic connection handling
+        socket.on('connect', function() {
+            // Connected to server
+        });
+
+        socket.on('connect_error', function(error) {
+            // Connection error
+        });
+
+        socket.on('disconnect', function() {
+            // Disconnected from server
+        });
+
+        // Function to format date for display
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        }
+
+        // Function to add a new attendance record to the table
+        function addAttendanceRecord(attendance) {
+            const tableBody = document.querySelector('table');
+            if (!tableBody) return;
+
+            // Check if a row for this user and entry time already exists
+            const rows = Array.from(tableBody.querySelectorAll('tr:not(:first-child)'));
+            const entryTime = new Date(attendance.entryTime).getTime();
+            const formattedEntryTime = formatDate(attendance.entryTime);
+
+            // Check if this user already has an entry with the same entry time
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].querySelectorAll('td');
+                if (cells[0].textContent === attendance.user.name &&
+                    cells[4].textContent === formattedEntryTime) {
+                    // This user already has an entry with this entry time
+                    // Just update the row if needed
+                    if (attendance.exitTime && cells[5].textContent === 'Still inside') {
+                        cells[5].textContent = formatDate(attendance.exitTime);
+                        cells[6].textContent = attendance.stayTime.toFixed(2);
+
+                        // Add highlight effect
+                        rows[i].style.backgroundColor = 'rgba(41, 82, 163, 0.3)';
+                        setTimeout(() => {
+                            gsap.to(rows[i], {
+                                backgroundColor: 'rgba(0, 0, 0, 0)',
+                                duration: 1.5
+                            });
+                        }, 1000);
+                    }
+                    return; // Exit without adding a new row
+                }
+            }
+
+            // If we get here, no existing row was found, so create a new one
+            const newRow = document.createElement('tr');
+            newRow.classList.add('fade-in');
+
+            // Store the entry time as a data attribute for sorting
+            newRow.setAttribute('data-entry-time', entryTime);
+            newRow.setAttribute('data-user-id', attendance.user._id);
+
+            // Add row content
+            newRow.innerHTML = `
+                <td>${attendance.user.name}</td>
+                <td>${attendance.user.enrollmentNumber}</td>
+                <td>${attendance.user.batch}</td>
+                <td>${attendance.user.semester}</td>
+                <td>${formattedEntryTime}</td>
+                <td>${attendance.exitTime ? formatDate(attendance.exitTime) : 'Still inside'}</td>
+                <td>${attendance.exitTime ? attendance.stayTime.toFixed(2) : 'N/A'}</td>
+            `;
+
+            // Get header row
+            const headerRow = tableBody.querySelector('tr:first-child');
+
+            // Insert the new row in the correct position based on entry time (newest first)
+            let inserted = false;
+
+            if (rows.length === 0) {
+                // If no rows exist yet, just append after header
+                if (headerRow) {
+                    headerRow.insertAdjacentElement('afterend', newRow);
+                } else {
+                    tableBody.appendChild(newRow);
+                }
+                inserted = true;
+            } else {
+                // Find the correct position based on entry time
+                for (let i = 0; i < rows.length; i++) {
+                    const rowTime = parseInt(rows[i].getAttribute('data-entry-time') || '0');
+                    if (entryTime > rowTime) {
+                        // This row has an older entry time, insert before it
+                        rows[i].insertAdjacentElement('beforebegin', newRow);
+                        inserted = true;
+                        break;
+                    }
+                }
+
+                // If not inserted yet, it's older than all existing rows, append at the end
+                if (!inserted) {
+                    rows[rows.length - 1].insertAdjacentElement('afterend', newRow);
+                }
+            }
+
+            // Apply hover effect to the new row
+            applyRowHoverEffect(newRow);
+
+            // Remove the last row if we have more than 10 rows (to maintain pagination)
+            const allRows = tableBody.querySelectorAll('tr');
+            if (allRows.length > 11) { // 1 header row + 10 data rows
+                allRows[allRows.length - 1].remove();
+            }
+        }
+
+        // Function to update an existing attendance record
+        function updateAttendanceRecord(attendance) {
+            const tableRows = document.querySelectorAll('table tr');
+
+            // Find the row with matching user ID
+            for (let i = 1; i < tableRows.length; i++) {
+                const row = tableRows[i];
+                const cells = row.querySelectorAll('td');
+
+                // Check if this is the row we want to update (by comparing name and entry time)
+                if (cells[0].textContent === attendance.user.name &&
+                    cells[4].textContent === formatDate(attendance.entryTime)) {
+
+                    // Update exit time and stay time
+                    cells[5].textContent = formatDate(attendance.exitTime);
+                    cells[6].textContent = attendance.stayTime.toFixed(2);
+
+                    // Add highlight effect
+                    row.style.backgroundColor = 'rgba(41, 82, 163, 0.3)';
+                    setTimeout(() => {
+                        gsap.to(row, {
+                            backgroundColor: 'rgba(0, 0, 0, 0)',
+                            duration: 1.5
+                        });
+                    }, 1000);
+
+                    break;
+                }
+            }
+        }
+
+        // Listen for attendance updates from the server
+        socket.on('attendance_update', function(data) {
+            if (data.type === 'new') {
+                addAttendanceRecord(data.attendance);
+            } else if (data.type === 'update') {
+                updateAttendanceRecord(data.attendance);
+            }
+        });
+
+        // Request initial data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            socket.emit('get_latest_attendance');
+
+            // Listen for initial data
+            socket.on('initial_attendance', function(attendances) {
+                // Update the table with the latest data
+                if (attendances && attendances.length > 0) {
+                    // Clear existing rows except the header
+                    const table = document.querySelector('table');
+                    const rows = table.querySelectorAll('tr:not(:first-child)');
+                    rows.forEach(row => row.remove());
+
+                    // Sort attendances by entry time (newest first)
+                    attendances.sort((a, b) => {
+                        const timeA = new Date(a.entryTime).getTime();
+                        const timeB = new Date(b.entryTime).getTime();
+                        return timeB - timeA; // Descending order (newest first)
+                    });
+
+                    // Add the latest attendance records
+                    attendances.forEach(attendance => {
+                        addAttendanceRecord(attendance);
+                    });
+                }
+            });
+
+            // Mobile Menu Toggle
+            const mobileMenu = document.getElementById('mobile-menu');
+            const navLinks = document.getElementById('nav-links');
+
+            if (mobileMenu) {
+                mobileMenu.addEventListener('click', function() {
+                    navLinks.classList.toggle('active');
+
+                    // Animate hamburger to X
+                    const spans = mobileMenu.querySelectorAll('span');
+                    if (navLinks.classList.contains('active')) {
+                        spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+                        spans[1].style.opacity = '0';
+                        spans[2].style.transform = 'rotate(-45deg) translate(7px, -6px)';
+                    } else {
+                        spans[0].style.transform = 'none';
+                        spans[1].style.opacity = '1';
+                        spans[2].style.transform = 'none';
+                    }
+                });
+
+                // Close menu when clicking on a link
+                const links = navLinks.querySelectorAll('a');
+                links.forEach(link => {
+                    link.addEventListener('click', function() {
+                        navLinks.classList.remove('active');
+                        const spans = mobileMenu.querySelectorAll('span');
+                        spans[0].style.transform = 'none';
+                        spans[1].style.opacity = '1';
+                        spans[2].style.transform = 'none';
+                    });
+                });
+            }
+        });
+
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Add glow effect to all buttons
+        document.querySelectorAll(".btn, .pagination-btn").forEach(btn => {
+            // Add glowing effect to all buttons
+            gsap.to(btn, {
+                boxShadow: "0 0 15px rgba(41, 82, 163, 0.8)",
+                repeat: -1,
+                yoyo: true,
+                duration: 1.5
+            });
+        });
+
+        // Special glow for download button
+        gsap.to(".download-btn", {
+            boxShadow: "0 0 20px rgba(46, 125, 50, 0.8)",
+            repeat: -1,
+            yoyo: true,
+            duration: 1.5
+        });
+
+        // Special glow for register button
+        gsap.to(".register-btn", {
+            boxShadow: "0 0 20px rgba(25, 118, 210, 0.8)",
+            repeat: -1,
+            yoyo: true,
+            duration: 1.5
+        });
+
+        // Button hover animations - simplified for performance
+        document.querySelectorAll(".btn, .pagination-btn").forEach(btn => {
+            btn.addEventListener("mouseenter", () => {
+                gsap.to(btn, {
+                    scale: 1.05,
+                    duration: 0.2
+                });
+            });
+
+            btn.addEventListener("mouseleave", () => {
+                gsap.to(btn, {
+                    scale: 1,
+                    duration: 0.2
+                });
+            });
+        });
+
+        // Function to apply hover effect to a row
+        function applyRowHoverEffect(row) {
+            row.addEventListener("mouseenter", () => {
+                gsap.to(row, {
+                    backgroundColor: "rgba(255, 255, 255, 0.15)",
+                    duration: 0.2
+                });
+            });
+
+            row.addEventListener("mouseleave", () => {
+                gsap.to(row, {
+                    backgroundColor: "rgba(0, 0, 0, 0)",
+                    duration: 0.2
+                });
+            });
+        }
+
+        // Table row hover effect - simplified
+        document.querySelectorAll("tr:not(:first-child)").forEach(row => {
+            applyRowHoverEffect(row);
+        });
+
+        // Simplified background effect
+
+        // Reduce animations on mobile for better performance
+        function optimizeForMobile() {
+            if (window.innerWidth <= 768) {
+                // Disable some animations on mobile
+                gsap.globalTimeline.getChildren().forEach(tween => {
+                    // Keep essential animations but reduce others
+                    if (tween.vars && tween.vars.repeat === -1) {
+                        // Slow down infinite animations
+                        tween.timeScale(0.7);
+                    }
+                });
+            }
+        }
+
+        // Run optimization on load and resize
+        window.addEventListener('load', optimizeForMobile);
+        window.addEventListener('resize', optimizeForMobile);
+
+        // Function to fetch latest attendance data via AJAX
+        function fetchLatestAttendance() {
+            // Only fetch if we're connected to avoid duplicate updates
+            if (socket.connected) {
+                socket.emit('get_latest_attendance');
+            }
+        }
+
+        // Set up periodic refresh every 30 seconds as a fallback
+        setInterval(fetchLatestAttendance, 30000);
+
+        // Add CSS for fade-in animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .fade-in {
+                animation: fadeIn 0.5s ease-out forwards;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
